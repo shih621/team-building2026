@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 Team Building 屬性大解析</title>
+    <style>
+        /* 全局基礎樣式與防跑版防禦性語法 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Microsoft JhengHei", sans-serif;
+        }
+
+        body {
+            background-color: #1e1e24;
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        /* 核心卡片容器：限定最大寬度，保證跨裝置絕對不跑版 */
+        .quiz-container {
+            width: 100%;
+            max-width: 480px;
+            background: rgba(30, 30, 36, 0.95);
+            border: 2px solid rgba(172, 214, 255, 0.2);
+            border-radius: 24px;
+            padding: 35px 25px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), 
+                        0 0 15px rgba(172, 214, 255, 0.1);
+            position: relative;
+            transition: all 0.4s ease;
+        }
+
+        /* 進度條樣式 */
+        .progress-container {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            margin-bottom: 30px;
+            overflow: hidden;
+            display: none;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #ACD6FF, #FFC1E0);
+            border-radius: 10px;
+            transition: width 0.4s ease;
+        }
+
+        /* 頁面切換動畫結構 */
+        .page {
+            display: none;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+
+        .page.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* 標題與內文排版 */
+        h1 {
+            font-size: 26px;
+            text-align: center;
+            margin-bottom: 20px;
+            line-height: 1.4;
+            background: linear-gradient(135deg, #ACD6FF 0%, #FFC1E0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 10px rgba(172, 214, 255, 0.2);
+        }
+
+        .question-text {
+            font-size: 18px;
+            font-weight: 600;
+            line-height: 1.5;
+            margin-bottom: 25px;
+            color: #ffffff;
+            border-left: 4px solid #FFC1E0;
+            padding-left: 12px;
+        }
+
+        .desc-text {
+            font-size: 15px;
+            color: #b3b3b3;
+            line-height: 1.6;
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        /* 選項卡片設計 (隨機凌亂分佈由 JS 打亂插入) */
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .option-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1.5px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 16px 20px;
+            font-size: 15px;
+            color: #e0e0e0;
+            cursor: pointer;
+            line-height: 1.4;
+            transition: all 0.25s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Hover 時發光與粉藍漸層效果 */
+        .option-card:hover {
+            background: rgba(172, 214, 255, 0.05);
+            border-color: #ACD6FF;
+            color: #ffffff;
+            box-shadow: 0 0 12px rgba(172, 214, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .option-card:active {
+            transform: translateY(0);
+        }
+
+        /* 按鈕基本樣式 */
+        .btn {
+            display: block;
+            width: 100%;
+            background: linear-gradient(135deg, #ACD6FF 0%, #FFC1E0 100%);
+            border: none;
+            border-radius: 14px;
+            padding: 16px;
+            color: #1e1e24;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 193, 224, 0.3);
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+            box-shadow: 0 6px 20px rgba(255, 193, 224, 0.5);
+            transform: translateY(-1px);
+        }
+
+        /* 結果頁專屬樣式 */
+        .result-title-label {
+            font-size: 14px;
+            color: #888;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+        }
+
+        .result-name {
+            font-size: 32px;
+            font-weight: 800;
+            text-align: center;
+            color: #FFC1E0;
+            margin-bottom: 15px;
+            text-shadow: 0 0 15px rgba(255, 193, 224, 0.6);
+        }
+
+        .result-desc {
+            font-size: 15px;
+            color: #e0e0e0;
+            text-align: center;
+            line-height: 1.6;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+        }
+
+        .teaser-box {
+            border-top: 1px dashed rgba(255, 255, 255, 0.15);
+            padding-top: 25px;
+            margin-top: 20px;
+        }
+
+        .teaser-title {
+            font-size: 16px;
+            color: #ACD6FF;
+            font-weight: bold;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .teaser-text {
+            font-size: 14px;
+            color: #b3b3b3;
+            line-height: 1.6;
+            text-align: justify;
+            margin-bottom: 25px;
+        }
+
+        /* 鎖頭鎖定按鈕樣式 */
+        .btn-locked {
+            background: #33333b;
+            color: #777780;
+            border: 1px solid #44444c;
+            box-shadow: none;
+            cursor: not-allowed;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-locked:hover {
+            opacity: 1;
+            box-sizing: border-box;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .lock-icon {
+            width: 16px;
+            height: 16px;
+            fill: #777780;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="quiz-container">
+        <!-- 上方進度條 -->
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <!-- 1. 歡迎頁面 -->
+        <div class="page active" id="welcomePage">
+            <div style="text-align: center; margin-bottom: 20px; font-size: 40px;">🎯</div>
+            <h1>2026 Team Building<br>屬性大解析</h1>
+            <p class="desc-text">
+                每個人渴望的充電方式都不同！有人喜歡大汗淋漓的快感，有人偏好靜謐燒腦的博弈，更有人只想躺平放空。花 1 分鐘完成 5 題生活情境核心盲測，解鎖你的專屬玩家屬性！
+            </p>
+            <button class="btn" onclick="startQuiz()">開始玩家分析</button>
+        </div>
+
+        <!-- 2. 測驗動態主體 -->
+        <div class="page" id="quizPage">
+            <div class="question-text" id="questionText">題目載入中...</div>
+            <div class="options-list" id="optionsList">
+                <!-- 選項由 JS 動態隨機凌亂生成 -->
+            </div>
+        </div>
+
+        <!-- 3. 結果神秘頁面 -->
+        <div class="page" id="resultPage">
+            <div class="result-title-label">Your Style</div>
+            <div class="result-name" id="resultName">【熱血運動狂】</div>
+            <div class="result-desc" id="resultDesc">載入分析中...</div>
+            
+            <!-- 主辦人懸念預告 -->
+            <div class="teaser-box">
+                <div class="teaser-title">🤫 主辦人的神祕預告</div>
+                <p class="teaser-text">
+                    測完了嗎？快去跟同事分享你的屬性吧！<br><br>
+                    不過... 先別擔心你會跟其他屬性的同事玩不到一塊。主辦人已經貼心為所有人準備好了！我們找到了一個神祕場地，不管你是想痛快流汗、舒服躺平發呆、還是開醺動腦，通通都能在同一個地方被完美滿足！<br><br>
+                    究竟這神祕的地點在哪裡？敬請期待正式公告解鎖！
+                </p>
+                <button class="btn btn-locked" disabled>
+                    <svg class="lock-icon" viewBox="0 0 24 24">
+                        <path d="M12 2c2.76 0 5 2.24 5 5v3h1c1.1 0 2 .9 2 2v8c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2v-8c0-1.1.9-2 2-2h1V7c0-2.76 2.24-5 5-5zm0 2c-1.66 0-3 1.34-3 3v3h6V7c0-1.66-1.34-3-3-3zm6 8H6v8h12v-8zm-6 2c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2z"/>
+                    </svg>
+                    神秘場地解鎖中 (即將公開)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 5道標準蓋洛普權重盲測題
+        const questions = [
+            {
+                text: "週末下午，你最渴望的充電方式？",
+                options: [
+                    { text: "痛快流汗，讓身體動起來", type: "active-casual" },
+                    { text: "窩在沙發發呆，什麼都不要想", type: "passive-casual" },
+                    { text: "找朋友玩一場燒腦的策略桌遊", type: "passive-intellectual" },
+                    { text: "刺激好玩的團隊競技", type: "active-intellectual" }
+                ]
+            },
+            {
+                text: "如果辦公室突然停電一小時，你會？",
+                options: [
+                    { text: "抓同事去走廊伸展、動一動", type: "active-casual" },
+                    { text: "默默趴在桌上補眠", type: "passive-casual" },
+                    { text: "開始研究電力系統為什麼會斷電", type: "passive-intellectual" },
+                    { text: "揪團找大家圍圈聊天玩小遊戲", type: "active-intellectual" }
+                ]
+            },
+            {
+                text: "理想中的團體競賽，你希望自己擔當什麼角色？",
+                options: [
+                    { text: "衝鋒陷陣、燃燒熱血的 MVP", type: "active-casual" },
+                    { text: "在台下優雅喝飲料、鼓掌的吉祥物", type: "passive-casual" },
+                    { text: "負責分析對手、運籌帷幄的軍師", type: "passive-intellectual" },
+                    { text: "在場邊指揮調度、帶動氣氛的隊長", type: "active-intellectual" }
+                ]
+            },
+            {
+                text: "看到一項從沒玩過的新活動，你的第一反應？",
+                options: [
+                    { text: "廢話少說，先上去試玩再說！", type: "active-casual" },
+                    { text: "先在旁邊看，別人玩得開心就好", type: "passive-casual" },
+                    { text: "上網查攻略，研究它的規則與勝率", type: "passive-intellectual" },
+                    { text: "思考這個活動怎麼改裝會更有趣", type: "active-intellectual" }
+                ]
+            },
+            {
+                text: "如果明天的聚會只能帶一樣東西，你會選擇？",
+                options: [
+                    { text: "一雙好穿好動的運動鞋", type: "active-casual" },
+                    { text: "一個能讓自己隨時躺平的舒服靠枕", type: "passive-casual" },
+                    { text: "一盒規則嚴謹、百玩不膩的燒腦桌遊", type: "passive-intellectual" },
+                    { text: "一組可以跟所有人同樂的派對道具", type: "active-intellectual" }
+                ]
+            }
+        ];
+
+        // 屬性稱號與分析文本描述
+        const profiles = {
+            "active-casual": {
+                name: "【熱血運動狂】",
+                desc: "你體內充滿了源源不絕的活力！比起坐在位子上狂動腦，你更偏好透過大汗淋漓、直覺式的身體律動來釋放工作壓力。只要能動起來，你就是全場最耀眼的發光體！"
+            },
+            "passive-casual": {
+                name: "【優雅沙發馬鈴薯】",
+                desc: "工作已經夠燒腦了，對你而言，最完美的充能就是徹底的放空與舒適。你最適合待在舒適寬敞的沙發區，手裡拿杯微醺飲品，一邊看著大家打鬧一邊充電，享受極致的療癒。"
+            },
+            "passive-intellectual": {
+                name: "【金頭腦策略家】",
+                desc: "比起體力活，你更享受智力交鋒的成就感！你擁有強大的邏輯與冷靜的觀察力，在安靜優雅的環境中跟夥伴們來一場考驗心機、運籌帷幄的策略桌遊，最能讓你感到通體舒暢。"
+            },
+            "active-intellectual": {
+                name: "【歡樂全能隊長】",
+                desc: "你既擁有行動派的活力，又有停不下來的活躍思維！你非常享受動態競賽中與團隊一邊沙盤推演、一邊高效率執行進攻的刺激感。不論是講求策略的球類戰術還是現場應變，你都樂在其中！"
+            }
+        };
+
+        let currentQuestionIndex = 0;
+        // 紀錄各類型的得分
+        const scores = {
+            "active-casual": 0,
+            "passive-casual": 0,
+            "passive-intellectual": 0,
+            "active-intellectual": 0
+        };
+
+        // 開啟測驗
+        function startQuiz() {
+            switchPage('welcomePage', 'quizPage');
+            document.getElementById('progressContainer').style.display = 'block';
+            showQuestion();
+        }
+
+        // 顯示題目 (核心功能：每次隨機凌亂分布選項)
+        function showQuestion() {
+            const q = questions[currentQuestionIndex];
+            
+            // 更新進度條
+            const percent = ((currentQuestionIndex) / questions.length) * 100;
+            document.getElementById('progressBar').style.width = `${percent}%`;
+
+            // 置入題目文字
+            document.getElementById('questionText').innerText = `Q${currentQuestionIndex + 1}. ${q.text}`;
+            
+            // 隨機打亂演算法 (Fisher-Yates Shuffle)
+            const shuffledOptions = [...q.options];
+            for (let i = shuffledOptions.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffledOptions[i], shuffledOptions[j]] = [shuffledOptions[j], shuffledOptions[i]];
+            }
+
+            // 清空並渲染隨機排序後的卡片
+            const optionsList = document.getElementById('optionsList');
+            optionsList.innerHTML = '';
+            
+            shuffledOptions.forEach(opt => {
+                const card = document.createElement('div');
+                card.className = 'option-card';
+                card.innerText = opt.text;
+                card.onclick = () => selectOption(opt.type);
+                optionsList.appendChild(card);
+            });
+        }
+
+        // 選取選項邏輯
+        function selectOption(type) {
+            scores[type]++;
+            currentQuestionIndex++;
+
+            if (currentQuestionIndex < questions.length) {
+                // 流暢淡入淡出切換下一題
+                const quizPage = document.getElementById('quizPage');
+                quizPage.style.opacity = '0';
+                quizPage.style.transform = 'translateY(-5px)';
+                
+                setTimeout(() => {
+                    showQuestion();
+                    quizPage.style.opacity = '1';
+                    quizPage.style.transform = 'translateY(0)';
+                }, 250);
+            } else {
+                endQuiz();
+            }
+        }
+
+        // 結束測驗，統計分數並公布結果
+        function endQuiz() {
+            document.getElementById('progressBar').style.width = '100%';
+            
+            // 找出最高得分的屬性
+            let maxType = "active-casual";
+            let maxScore = -1;
+            for (const type in scores) {
+                if (scores[type] > maxScore) {
+                    maxScore = scores[type];
+                    maxType = type;
+                }
+            }
+
+            // 渲染結果內容
+            const result = profiles[maxType];
+            document.getElementById('resultName').innerText = result.name;
+            document.getElementById('resultDesc').innerText = result.desc;
+
+            // 隱藏進度條並切換至結果頁
+            setTimeout(() => {
+                document.getElementById('progressContainer').style.display = 'none';
+                switchPage('quizPage', 'resultPage');
+            }, 400);
+        }
+
+        // 換頁過渡輔助函式
+        function switchPage(fromId, toId) {
+            const fromPage = document.getElementById(fromId);
+            const toPage = document.getElementById(toId);
+            
+            fromPage.classList.remove('active');
+            setTimeout(() => {
+                toPage.classList.add('active');
+            }, 50);
+        }
+    </script>
+</body>
+</html>
