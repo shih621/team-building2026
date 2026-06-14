@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 Team Building 提案報告 - Ahhh Taipei</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Microsoft JhengHei", sans-serif;
+        }
+
+        :root {
+            --primary-pink: #FFC1E0;
+            --primary-blue: #ACD6FF;
+            --dark-bg: #1A1C20;
+            --card-bg: #252830;
+            --text-light: #FFFFFF;
+            --text-muted: #B0B5C1;
+            
+            /* Personality Colors */
+            --color-active-casual: #FF88A5;       
+            --color-passive-casual: #FFE494;      
+            --color-passive-intellectual: #94E3FF;
+            --color-active-intellectual: #B0FFA4; 
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            color: var(--text-light);
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Presentation Container */
+        .presentation-container {
+            flex: 1;
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+            padding: 40px 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            overflow-y: auto; /* 允許手機版內容過多時可垂直捲動 */
+        }
+
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Typography & Components */
+        .slide-header {
+            margin-bottom: 30px;
+            border-left: 5px solid var(--primary-pink);
+            padding-left: 15px;
+            flex-shrink: 0;
+        }
+
+        .slide-title {
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .slide-subtitle {
+            font-size: 16px;
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+
+        /* Slide 1: Welcome */
+        .welcome-layout {
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .logo-placeholder {
+            font-size: 72px;
+            font-weight: 900;
+            color: var(--primary-blue);
+            letter-spacing: -2px;
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+        .welcome-tag {
+            background: rgba(255, 193, 224, 0.2);
+            color: var(--primary-pink);
+            padding: 6px 16px;
+            border-radius: 20px;
+            display: inline-block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 25px;
+            border: 1px solid var(--primary-pink);
+        }
+        .welcome-title {
+            font-size: 46px;
+            font-weight: 800;
+            line-height: 1.3;
+            margin-bottom: 30px;
+        }
+
+        /* Slide 2: Info Grid */
+        .info-grid {
+            display: flex;
+            gap: 20px;
+            width: 100%;
+        }
+        .info-card {
+            flex: 1;
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid rgba(172, 214, 255, 0.1);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        .card-icon {
+            font-size: 36px;
+            margin-bottom: 15px;
+        }
+        .card-label {
+            font-size: 14px;
+            color: var(--primary-blue);
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+        .card-val {
+            font-size: 24px;
+            font-weight: 700;
+            color: #FFF;
+            line-height: 1.4;
+        }
+        .card-sub {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-top: 10px;
+            line-height: 1.5;
+        }
+
+        /* Slide 3: Floor Plan Map & Tags */
+        .map-layout {
+            display: flex;
+            width: 100%;
+            gap: 40px;
+            align-items: center;
+        }
+        .map-container {
+            flex: 1.2;
+            position: relative;
+            background: #202226;
+            border-radius: 24px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.05);
+            width: 100%;
+        }
+        
+        .floorplan-svg {
+            width: 100%;
+            height: auto;
+            max-height: 55vh;
+        }
+
+        /* Map Hotspot Annotations */
+        .map-annotation {
+            position: absolute;
+            background: rgba(26, 28, 32, 0.95);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 10px 14px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+        }
+        
+        .anno-court { bottom: 22%; left: 8%; width: 220px; border-left: 4px solid var(--primary-pink); }
+        .anno-lounge { top: 15%; right: 8%; width: 220px; border-left: 4px solid var(--primary-blue); }
+        .anno-title { font-size: 14px; font-weight: bold; margin-bottom: 6px; }
+        
+        /* Personality Tags */
+        .personality-tag {
+            display: inline-block;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-weight: bold;
+            color: #1A1C20;
+            margin-right: 4px;
+            margin-top: 4px;
+        }
+        .tag-active-casual { background-color: var(--color-active-casual); }
+        .tag-passive-casual { background-color: var(--color-passive-casual); }
+        .tag-passive-intellectual { background-color: var(--color-passive-intellectual); }
+        .tag-active-intellectual { background-color: var(--color-active-intellectual); }
+
+        .map-details {
+            flex: 0.8;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+        }
+
+        .zone-box {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .zone-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        /* Slide 4: Tournament Rule Preview */
+        .rules-layout {
+            text-align: center;
+            max-width: 700px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, rgba(172,214,255,0.05), rgba(255,193,224,0.05));
+            padding: 50px;
+            border-radius: 30px;
+            border: 2px dashed rgba(255, 193, 224, 0.3);
+            width: 100%;
+        }
+        .mystery-title {
+            font-size: 36px;
+            font-weight: 800;
+            color: var(--primary-pink);
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+        }
+        .mystery-text {
+            color: var(--text-muted);
+            font-size: 16px;
+            line-height: 1.8;
+            margin-bottom: 30px;
+        }
+        .lock-badge {
+            font-size: 48px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.8; }
+        }
+
+        /* Navigation Bar */
+        .nav-bar {
+            height: 70px;
+            background: #15161a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            flex-shrink: 0;
+            z-index: 10;
+        }
+        .nav-btn {
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #FFF;
+            padding: 8px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .nav-btn:hover {
+            border-color: var(--primary-pink);
+            color: var(--primary-pink);
+        }
+        .dots-indicator {
+            display: flex;
+            gap: 10px;
+        }
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .dot.active {
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-pink));
+            width: 24px;
+            border-radius: 5px;
+        }
+
+        /* ==========================================================================
+           📱 手機版 RWD 響應式優化 (斷點設為 768px 以下)
+           ========================================================================== */
+        @media (max-width: 768px) {
+            .slide {
+                padding: 30px 20px 80px 20px; /* 增加底部間距留給導覽列，防止內容被遮擋 */
+                justify-content: flex-start;  /* 手機版改從頂部排起，方便向下滾動 */
+            }
+
+            .slide-header {
+                margin-bottom: 20px;
+            }
+
+            .slide-title {
+                font-size: 24px;
+            }
+
+            .slide-subtitle {
+                font-size: 13px;
+            }
+
+            /* Slide 1 手機優化 */
+            .logo-placeholder {
+                font-size: 48px;
+            }
+            .welcome-title {
+                font-size: 26px;
+                margin-bottom: 20px;
+            }
+
+            /* Slide 2 手機改為單欄垂直排列 */
+            .info-grid {
+                flex-direction: column;
+                gap: 15px;
+            }
+            .info-card {
+                padding: 20px;
+            }
+            .card-val {
+                font-size: 18px;
+            }
+
+            /* Slide 3 手機改為直式，地圖與文字上下疊放 */
+            .map-layout {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            /* 縮小手機版地圖上的標籤文字與寬度，避免超出螢幕 */
+            .map-annotation {
+                padding: 6px 10px;
+            }
+            .anno-court {
+                width: 140px;
+                bottom: 15%;
+                left: 4%;
+            }
+            .anno-lounge {
+                width: 140px;
+                top: 10%;
+                right: 4%;
+            }
+            .anno-title {
+                font-size: 11px;
+                margin-bottom: 2px;
+            }
+            .personality-tag {
+                font-size: 9px;
+                padding: 1px 4px;
+            }
+
+            /* Slide 4 手機版調整外距內襯 */
+            .rules-layout {
+                padding: 30px 20px;
+            }
+            .mystery-title {
+                font-size: 24px;
+            }
+            .mystery-text {
+                font-size: 14px;
+            }
+
+            /* 導覽列縮減寬度與內襯 */
+            .nav-bar {
+                padding: 0 15px;
+                height: 60px;
+            }
+            .nav-btn {
+                padding: 6px 12px;
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="presentation-container">
+        
+        <!-- SLIDE 1: WELCOME -->
+        <div class="slide active" id="slide-0">
+            <div class="welcome-layout">
+                <div class="logo-placeholder">Ahhh</div>
+                <div class="welcome-tag">TAIPEI PICKLEBALL SOCIAL HUB</div>
+                <h1 class="welcome-title">科內專屬 Team Building<br>包場活動提案與人格空間解析</h1>
+                <p style="color: var(--text-muted); font-size: 14px;">運動 × 音樂 × 微醺 ｜ 在市中心打造一場絕無僅有的精采聚會</p>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: TIME & LOCATION INFO -->
+        <div class="slide" id="slide-1">
+            <div class="slide-header">
+                <div class="slide-title">活動基本資訊</div>
+                <div class="slide-subtitle">時間、時段與包場規格概覽</div>
+            </div>
+            <div class="info-grid">
+                <div class="info-card">
+                    <div class="card-icon">📍</div>
+                    <div class="card-label">活動地點</div>
+                    <div class="card-val">Ahhh 台北華山店</div>
+                    <div class="card-sub">台北市中正區杭州北路26號1樓<br>(67坪專屬精緻社交空間)</div>
+                </div>
+                <div class="info-card">
+                    <div class="card-icon">📅</div>
+                    <div class="card-label">暫定日期</div>
+                    <div class="card-val">7/23 (四) 或 7/31 (五)</div>
+                    <div class="card-sub">科內同仁檔期微調，建議可優先進行內部意願投票</div>
+                </div>
+                <div class="info-card">
+                    <div class="card-icon">🕒</div>
+                    <div class="card-label">活動時段</div>
+                    <div class="card-val">14:00 - 17:00</div>
+                    <div class="card-sub">黃金3小時輕鬆白日方案<br>內含專屬 Bartender 與球拍球具免費提供</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: FLOOR PLAN & PERSONALITY TAGS -->
+        <div class="slide" id="slide-2">
+            <div class="slide-header">
+                <div class="slide-title">場地內容與盲測人格結合</div>
+                <div class="slide-subtitle">簡報時可直接展示地圖與對應的同仁人格落點</div>
+            </div>
+            
+            <div class="map-layout">
+                <!-- Left: Interactive Vector Floor Plan Layout -->
+                <div class="map-container">
+                    <svg class="floorplan-svg" viewBox="0 0 500 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M0 50H500M0 100H500M0 150H500M0 200H500M0 250H500M0 300H500M0 350H500" stroke="#2B2E36" stroke-width="1"/>
+                        <path d="M50 0V400M100 0V400M150 0V400M200 0V400M250 0V400M300 0V400M350 0V400M400 0V400M450 0V400" stroke="#2B2E36" stroke-width="1"/>
+                        
+                        <!-- VIP Lounge -->
+                        <rect x="250" y="40" width="210" height="170" rx="8" stroke="#4A4F5D" stroke-width="2" fill="#252830" fill-opacity="0.6"/>
+                        <text x="355" y="120" fill="#B0B5C1" font-size="13" text-anchor="middle" font-weight="bold">VIP 包廂放空交流區</text>
+                        
+                        <!-- Pickleball Court -->
+                        <rect x="40" y="240" width="420" height="120" rx="8" stroke="#ACD6FF" stroke-width="3" fill="#1E2026"/>
+                        <rect x="55" y="250" width="390" height="100" stroke="#FFC1E0" stroke-width="2" fill="#FFC1E0" fill-opacity="0.05"/>
+                        <line x1="250" y1="250" x2="250" y2="350" stroke="#FFC1E0" stroke-width="2" stroke-dasharray="4 4"/>
+                        <text x="250" y="305" fill="#FFF" font-size="15" text-anchor="middle" font-weight="bold" letter-spacing="2">室內匹克球道 (Pickleball Court)</text>
+                    </svg>
+
+                    <!-- Overlaying Tags on Floorplan Map -->
+                    <div class="map-annotation anno-court">
+                        <div class="anno-title">圖① 獨家室內球場</div>
+                        <div class="tag-group">
+                            <span class="personality-tag tag-active-casual">熱血運動狂</span>
+                            <span class="personality-tag tag-active-intellectual">歡樂隊長</span>
+                        </div>
+                    </div>
+
+                    <div class="map-annotation anno-lounge">
+                        <div class="anno-title">圖② VIP沙發區</div>
+                        <div class="tag-group">
+                            <span class="personality-tag tag-passive-casual">沙發馬鈴薯</span>
+                            <span class="personality-tag tag-passive-intellectual">策略家</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Details Breakdown -->
+                <div class="map-details">
+                    <div class="zone-box" style="border-left: 4px solid var(--primary-pink);">
+                        <div class="zone-header">
+                            <span>🏸 1號專屬球道區</span>
+                        </div>
+                        <p style="font-size: 14px; color: var(--text-muted); line-height: 1.5;">
+                            提供新手教學、趣味友誼分組賽及不間斷自由對打。最適合喜歡痛快流汗的<strong>【熱血運動狂】</strong>以及喜歡全場跑動指揮的<strong>【歡樂全能隊長】</strong>大展身手！
+                        </p>
+                    </div>
+
+                    <div class="zone-box" style="border-left: 4px solid var(--primary-blue);">
+                        <div class="zone-header">
+                            <span>🍸 2號 VIP 奢華包廂</span>
+                        </div>
+                        <p style="font-size: 14px; color: var(--text-muted); line-height: 1.5;">
+                            精緻沙發與獨立吧台。專為想躺平充電、微醺喝爽酒的<strong>【優雅沙發馬鈴薯】</strong>打造！也完美契合自備桌遊、冷靜博弈心機的<strong>【金頭腦策略家】</strong>！
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: TOURNAMENT RULES PREVIEW -->
+        <div class="slide" id="slide-3">
+            <div class="slide-header">
+                <div class="slide-title">團隊競賽體系</div>
+                <div class="slide-subtitle">核心賽制系統規劃</div>
+            </div>
+            <div class="rules-layout">
+                <div class="lock-badge">🔒</div>
+                <div class="mystery-title">賽制系統：敬請期待</div>
+                <p class="mystery-text">
+                    主辦團隊正在依據全科同仁盲測人格的黃金比例，精心調配最速配的「趣味對抗賽制」，有其他想法的同仁也歡迎提出來喔！！
+                </p>
+                <div style="font-size: 14px; color: var(--primary-pink); font-weight: bold;">賽程籤表與特殊道具規則將於活動前正式解鎖！</div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- NAVIGATION CONTROLS -->
+    <div class="nav-bar">
+        <button class="nav-btn" id="prev-key" onclick="moveSlide(-1)">◀ 上一頁</button>
+        <div class="dots-indicator" id="dots-container"></div>
+        <button class="nav-btn" id="next-key" onclick="moveSlide(1)">下一頁 ▶</button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const totalSlides = 4;
+
+        // Initialize Pagination Dots
+        const dotsContainer = document.getElementById('dots-container');
+        for (let i = 0; i < totalSlides; i++) {
+            const dot = document.createElement('div');
+            dot.className = `dot ${i === 0 ? 'active' : ''}`;
+            dot.onclick = () => goToSlide(i);
+            dotsContainer.appendChild(dot);
+        }
+
+        function updateControls() {
+            // Update Active Slide Class
+            for (let i = 0; i < totalSlides; i++) {
+                document.getElementById(`slide-${i}`).classList.remove('active');
+            }
+            document.getElementById(`slide-${currentSlide}`).classList.add('active');
+
+            // Update Dots
+            const dots = dotsContainer.getElementsByClassName('dot');
+            for (let i = 0; i < dots.length; i++) {
+                dots[i].classList.remove('active');
+                if (i === currentSlide) dots[i].classList.add('active');
+            }
+        }
+
+        function moveSlide(direction) {
+            currentSlide += direction;
+            if (currentSlide < 0) currentSlide = totalSlides - 1;
+            if (currentSlide >= totalSlides) currentSlide = 0;
+            updateControls();
+        }
+
+        function goToSlide(index) {
+            currentSlide = index;
+            updateControls();
+        }
+
+        // Support Keyboard Arrows for smooth presenting
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                moveSlide(1);
+            } else if (e.key === 'ArrowLeft') {
+                moveSlide(-1);
+            }
+        });
+    </script>
+</body>
+</html>
